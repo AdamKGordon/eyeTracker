@@ -1,0 +1,33 @@
+Project Goals
+
+1. Be able to track eye movements and us it to control the cursor on a device (computer, more?)
+  a. Capture eye movmements with a camera
+    i.   Connected to device with Bluetooth and USB
+    ii.  Camera will be physically mounted on the screen
+    iii. User could up 1.5m away
+    iv.  Toggleable mouse control via software (ie. show where you're and control mouse or just control mouse)
+    v.   A calibration
+    
+
+2. A method to click
+  a. Left click by a certain movement captured by the camera
+    i. Possible ergonomic problems (taxing on the user if the movement isn't easy)
+  b. Think about other mouse buttons later (right click, scroll, dragging)
+  
+Ways to click
+  Ergonomic left click and "menu" for more mouse buttons or keyboard options
+  
+    Stare at a point for x seconds
+    close eyes for x seconds
+    blinking
+    head movements
+      nodding
+    voice control
+        words
+        other sounds like a clicking noise
+    look at point and then look at on screen click
+    biteable mouse
+    menu (https://www.youtube.com/watch?v=MliApqHE9k4)
+    mouth movement
+    button
+    
