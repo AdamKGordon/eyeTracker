@@ -18,6 +18,7 @@ class Eye(object):
         self.origin = None
         self.center = None
         self.pupil = None
+        self.points = None
 
         self._analyze(original_frame, landmarks, side, calibration)
 
@@ -89,6 +90,7 @@ class Eye(object):
             ratio = None
 
         return ratio
+    
 
     def _analyze(self, original_frame, landmarks, side, calibration):
         """Detects and isolates the eye in a new frame, sends data to the calibration
@@ -102,9 +104,12 @@ class Eye(object):
         """
         if side == 0:
             points = self.LEFT_EYE_POINTS
+            self.points = self.LEFT_EYE_POINTS
         elif side == 1:
-            points = self.RIGHT_EYE_POINTS
+            points     = self.RIGHT_EYE_POINTS
+            self.points = self.RIGHT_EYE_POINTS
         else:
+            self.points = None
             return
 
         self.blinking = self._blinking_ratio(landmarks, points)
@@ -112,6 +117,12 @@ class Eye(object):
 
         if not calibration.is_complete():
             calibration.evaluate(self.frame, side)
+            #print('Calibration is NOT complete')
 
+        else:
+            #print('Calibration is complete')
+            pass
+
+        # print(" ")
         threshold = calibration.threshold(side)
         self.pupil = Pupil(self.frame, threshold)
