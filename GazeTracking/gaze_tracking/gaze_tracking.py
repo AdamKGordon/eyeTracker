@@ -2,12 +2,15 @@ from __future__ import division
 import os
 import cv2
 import dlib
+import csv
 
 #import eye
 #from eye import Eye
 from .eye import Eye
 from .calibration import Calibration
+from .mouse import Mouse
 
+cursor = Mouse()
 
 class GazeTracking(object):
     """
@@ -75,13 +78,17 @@ class GazeTracking(object):
 
     def pupil_left_coords(self):
         """Returns the coordinates of the left pupil"""
+        # if pupils not located, returns None
+
         if self.pupils_located:
             x = self.eye_left.origin[0] + self.eye_left.pupil.x
             y = self.eye_left.origin[1] + self.eye_left.pupil.y
             return (x, y)
 
+
     def pupil_right_coords(self):
         """Returns the coordinates of the right pupil"""
+        # if pupils not located, returns None
         if self.pupils_located:
             x = self.eye_right.origin[0] + self.eye_right.pupil.x
             y = self.eye_right.origin[1] + self.eye_right.pupil.y
@@ -108,6 +115,7 @@ class GazeTracking(object):
             return (left, right, top, bottom)
 
     def get_landmark_points_left(self): # left
+        # if pupils not located, returns None
         if self.pupils_located:
             point_list = []
             for i in range(len(self.eye_left.points)):
@@ -116,6 +124,7 @@ class GazeTracking(object):
             return tuple(point_list)
 
     def get_landmark_points_right(self): # right
+        # if pupils not located, returns None
         if self.pupils_located:
             point_list = []
             for i in range(len(self.eye_right.points)):
@@ -165,6 +174,7 @@ class GazeTracking(object):
             return blinking_ratio > 3.8
 
     def annotated_frame_eye(self, frame):
+        # displays landmark points
         green = (0,0,255)
         if self.pupils_located:
             landmark_points_left  = self.get_landmark_points_left()
@@ -264,10 +274,10 @@ class GazeTracking(object):
                 cv2.circle(frame, (int(gaze_hor_x), int(gaze_vert_y)), 4, (0,255,0))
                 cv2.circle(frame, (int(gaze_hor_x), int(gaze_vert_y)), 7, (0,255,0))
 
-            if(0): # algorithm 4, algorithm 3 but weighted sample yi(t)=Aix(t)+Biyi(t-1), yi(t)=self.algorithm_4_points[i]
+            if(1): # algorithm 4, algorithm 3 but weighted sample yi(t)=Aix(t)+Biyi(t-1), yi(t)=self.algorithm_4_points[i]
                 if self.algorithm_4_points == None:
                     self.algorithm_4_points = [[frame_height/2, frame_width/2]]*29 # *num of points
-                landmark_points = self.get_landmark_points()
+                landmark_points = self.get_landmark_points_left()
                 pupil_point     = self.pupil_left_coords()
 
                 top_vert = (int(landmark_points[1].y) + int(landmark_points[2].y)) / 2.0
@@ -329,6 +339,60 @@ class GazeTracking(object):
             cv2.line(frame, (x_left, y_left - 5), (x_left, y_left + 5), color)
             cv2.line(frame, (x_right - 5, y_right), (x_right + 5, y_right), color)
             cv2.line(frame, (x_right, y_right - 5), (x_right, y_right + 5), color)
-            self.annotated_frame_eye(frame) 
-            self.annotated_gaze_estimation_visual(frame)
+            #self.annotated_frame_eye(frame) # move this into example.py
+            #self.annotated_gaze_estimation_visual(frame)
         return frame
+
+    def log_landmarks_pupils_and_cursor_pos(self, username="1"):
+        # Input: username for file name , Output: 2D array
+        #  Logs data into input_data.csv and output_data.csv
+        # pt1=pupil_left, pt2=pupil_right, pt3=landmark1_left, pt8=landmark6_left 
+        #   pt9=landmark1_right, pt15=landmark6_right,
+
+        # [pt1x,pt1y,pt2x,pt2y,....,pt14x,pt14y] for each csv row
+        # [mouse_pt1x, mouse_pt1y] for each csv row
+
+
+        # pack input data
+        input_data_list = []
+        pupil_left  = self.pupil_left_coords()
+        pupil_right = self.pupil_right_coords()
+        landmarks_left  = self.get_landmark_points_left()
+        landmarks_right = self.get_landmark_points_right()
+
+        # pack input data
+        if pupil_left is None:
+            input_data_list.extend([None, None])
+        else:
+            input_data_list.extend(pupil_left)
+        if pupil_right is None:
+            input_data_list.extend([None, None])
+        else:
+            input_data_list.extend(pupil_right)
+        if landmarks_left is None:
+            input_data_list.extend([None, None]*6)
+        else:
+            for xy_tuple in landmarks_left:
+                print(xy_tuple)
+                input_data_list.extend([xy_tuple.x,xy_tuple.y])
+        if landmarks_right is None:
+            input_data_list.extend([None, None]*6)
+        else:
+            for xy_tuple in landmarks_left:
+                input_data_list.extend([xy_tuple.x,xy_tuple.y])
+
+        # pack output data
+        output_data_list = cursor.cursor_position()
+
+        cwd = os.getcwd()
+        #print(cwd) # C:\Users\adamk\Desktop\University\Y4\Sem1\Capstone-\eyeTracker
+        model_data_path = cwd + '\model_data'
+        if not os.path.exists(model_data_path):
+            os.mkdir(model_data_path)
+            
+        with open("{}\input_data_{}.csv".format(model_data_path,username), 'a', newline='') as input_file, open("{}\output_data_{}.csv".format(model_data_path,username), 'a', newline='') as output_file:
+            wr_in = csv.writer(input_file, quoting=csv.QUOTE_NONE)#, escapechar=',')
+            wr_in.writerow(input_data_list)
+
+            wr_out = csv.writer(output_file, quoting=csv.QUOTE_NONE)#, escapechar=',')
+            wr_out.writerow(output_data_list)
