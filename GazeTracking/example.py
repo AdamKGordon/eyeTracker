@@ -5,9 +5,11 @@ Check the README.md for complete documentation.
 
 import cv2
 from gaze_tracking import GazeTracking
+from gaze_tracking.mouse import Mouse
 
 gaze = GazeTracking()
 webcam = cv2.VideoCapture(0) # ORGINAL CODE
+cursor = Mouse()
 #nwebcam = cv2.VideoCapture(-1) # ADAM CODE
 
 while True:
@@ -33,8 +35,11 @@ while True:
 
     left_pupil = gaze.pupil_left_coords()
     right_pupil = gaze.pupil_right_coords()
+    x, y = cursor.cursor_position()
     cv2.putText(frame, "Left pupil:  " + str(left_pupil), (90, 130), cv2.FONT_HERSHEY_DUPLEX, 0.9, (147, 58, 31), 1)
     cv2.putText(frame, "Right pupil: " + str(right_pupil), (90, 165), cv2.FONT_HERSHEY_DUPLEX, 0.9, (147, 58, 31), 1)
+    cv2.putText(frame, "cursor x position: " + str(x), (90, 200), cv2.FONT_HERSHEY_DUPLEX, 0.9, (147, 58, 31), 1)
+    cv2.putText(frame, "cursor y position: " + str(y), (90, 235), cv2.FONT_HERSHEY_DUPLEX, 0.9, (147, 58, 31), 1)
 
     cv2.namedWindow("window", cv2.WND_PROP_FULLSCREEN)
     cv2.setWindowProperty("window",cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
