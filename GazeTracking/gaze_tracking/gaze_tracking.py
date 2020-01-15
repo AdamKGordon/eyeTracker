@@ -1,16 +1,18 @@
 from __future__ import division
-import os
+
+import csv
 import cv2
 import dlib
-import csv
+import os
 
-#import eye
-#from eye import Eye
-from .eye import Eye
 from .calibration import Calibration
+# import eye
+# from eye import Eye
+from .eye import Eye
 from .mouse import Mouse
 
 cursor = Mouse()
+
 
 class GazeTracking(object):
     """
@@ -378,8 +380,8 @@ class GazeTracking(object):
         if landmarks_right is None:
             input_data_list.extend([None, None]*6)
         else:
-            for xy_tuple in landmarks_left:
-                input_data_list.extend([xy_tuple.x,xy_tuple.y])
+            for xy_tuple in landmarks_right:
+                input_data_list.extend([xy_tuple.x, xy_tuple.y])
 
         # pack output data
         output_data_list = cursor.cursor_position()
