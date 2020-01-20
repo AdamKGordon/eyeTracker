@@ -4,9 +4,9 @@ Check the README.md for complete documentation.
 """
 
 import cv2
+import time
 from gaze_tracking import GazeTracking
 from gaze_tracking.mouse import Mouse
-import time
 
 gaze = GazeTracking()
 webcam = cv2.VideoCapture(0) # ORGINAL CODE
@@ -44,6 +44,7 @@ while True:
     cv2.putText(frame, "Right pupil: " + str(right_pupil), (90, 165), cv2.FONT_HERSHEY_DUPLEX, 0.9, (147, 58, 31), 1)
     cv2.putText(frame, "cursor x position: " + str(mouse_x), (90, 200), cv2.FONT_HERSHEY_DUPLEX, 0.9, (147, 58, 31), 1)
     cv2.putText(frame, "cursor y position: " + str(mouse_y), (90, 235), cv2.FONT_HERSHEY_DUPLEX, 0.9, (147, 58, 31), 1)
+    # cursor.cursor_move(100, 200)
 
     gaze.annotated_frame_eye(frame) # displays landmark points
     gaze.annotated_gaze_estimation_visual(frame) # displays spot looked at on screen
