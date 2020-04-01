@@ -19,3 +19,9 @@ class Mouse(object):
 
     def cursor_move(self, x, y):
         autopy.mouse.move(x, y)
+
+    def left_click(self):
+        autopy.mouse.click(autopy.mouse.Button.LEFT)
+
+    def right_click(self):
+        autopy.mouse.click(autopy.mouse.Button.RIGHT)

@@ -375,7 +375,7 @@ class GazeTracking(object):
             input_data_list.extend([None, None]*6)
         else:
             for xy_tuple in landmarks_left:
-                print(xy_tuple)
+                #print(xy_tuple)
                 input_data_list.extend([xy_tuple.x,xy_tuple.y])
         if landmarks_right is None:
             input_data_list.extend([None, None]*6)
