@@ -1,95 +1,110 @@
-from __future__ import division
-import cv2
+"""
+Demonstration of the GazeTracking library.
+Check the README.md for complete documentation.
+"""
 import csv
-from .pupil import Pupil
+import numpy as np
+import cv2
+from gaze_tracking import GazeTracking
+from gaze_tracking.mouse import Mouse
+import time
+from datetime import datetime
 
+gaze = GazeTracking()
+webcam = cv2.VideoCapture(0) # ORGINAL CODE
 
-class Calibration(object):
-    """
-    This class calibrates the pupil detection algorithm by finding the
-    best binarization threshold value for the person and the webcam.
-    """
+cursor = Mouse()
+username = input('What is your name: ')
+print('Get ready. Look at your cursor {} and move it around!'.format(username))
+time.sleep(2)
 
-    def __init__(self):
-        self.nb_frames = 20
-        self.thresholds_left = []
-        self.thresholds_right = []
+InputData = []
+OutputData = []
 
-    def is_complete(self):
-        """Returns true if the calibration is completed"""
-        return len(self.thresholds_left) >= self.nb_frames and len(self.thresholds_right) >= self.nb_frames
+startingtime = datetime.now()
+time = startingtime
+do_calibration = True
+max_x = 1300
+max_y = 869
+starting_x_value = 0
+starting_y_value = 30
+x_value = starting_x_value
+y_value = starting_y_value
+sec = 5
 
-    def threshold(self, side):
-        """Returns the threshold value for the given eye.
+def saveData(filename, data):
+    with open(filename, mode='w') as file_writer:
+        file_writer = csv.writer(file_writer, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        for line in data:
+            file_writer.writerow(line)
 
-        Argument:
-            side: Indicates whether it's the left eye (0) or the right eye (1)
-        """
-        if side == 0:
-            return int(sum(self.thresholds_left) / len(self.thresholds_left))
-        elif side == 1:
-            return int(sum(self.thresholds_right) / len(self.thresholds_right))
+while True:
+    # We get a new frame from the webcam
+    _, frame = webcam.read()
+    # We send this frame to GazeTracking to analyze it
+    gaze.refresh(frame)
+    frame = gaze.annotated_frame()
 
-    @staticmethod
-    def iris_size(frame):
-        """Returns the percentage of space that the iris takes up on
-        the surface of the eye.
+    if (datetime.now() - startingtime).total_seconds() < 6:
+        if (datetime.now() - time).total_seconds() >= 1:
+            sec = sec - 1
+            time = datetime.now()
+        cv2.putText(frame, "Please look at the cursor", (400, 80), cv2.FONT_HERSHEY_DUPLEX, 1.6, (147, 58, 31), 2)
+        cv2.putText(frame, "Calibration starts in", (430, 200), cv2.FONT_HERSHEY_DUPLEX, 1.6, (147, 58, 31), 2)    
+        cv2.putText(frame, str(sec), (650, 250), cv2.FONT_HERSHEY_DUPLEX, 1.6, (147, 58, 31), 2)
 
-        Argument:
-            frame (numpy.ndarray): Binarized iris frame
-        """
-        frame = frame[5:-5, 5:-5]
-        height, width = frame.shape[:2]
-        nb_pixels = height * width
-        nb_blacks = nb_pixels - cv2.countNonZero(frame)
-        return nb_blacks / nb_pixels
+    elif do_calibration:
+ #       Calibration().calibrate_from_data("/Users/jeromicho/git/eyeTracker/input_data_Jacky.csv")
+        if y_value < max_y:
+            if x_value < max_x:
+                cv2.putText(frame, "+", (int(x_value), int(y_value)), cv2.FONT_HERSHEY_DUPLEX, 1.6, (147, 58, 31), 2)
+                if gaze.pupils_located:
+                    newInput = []
+                    newOutput = []
+                    newOutput.append(x_value)
+                    newOutput.append(y_value)
+                    landmark_points_left = gaze.get_landmark_points_left()
+                    for point in landmark_points_left:
+                        newInput.append(point.x)
+                        newInput.append(point.y)
+                        print ("left landmark: ", str(point.x), " ", str(point.y))
+                    landmark_points_right = gaze.get_landmark_points_right()
+                    for point in landmark_points_right:
+                        newInput.append(point.x)
+                        newInput.append(point.y)
+                        print ("right landmark: ", str(point.x), " ", str(point.y))
+                    x_left, y_left = gaze.pupil_left_coords()
+                    newInput.append(x_left)
+                    newInput.append(y_left)
+                    x_right, y_right = gaze.pupil_right_coords()
+                    newInput.append(x_right)
+                    newInput.append(y_right)
+                    print ("left pupil: ", str(x_left), " ", str(y_left))
+                    print ("right pupil: ", str(x_right), " ", str(y_right))
+                    print ("-----------------------------------")
+                    InputData.append(newInput)
+                    OutputData.append(newOutput)
+                    print(len(InputData))
+                x_value += 20
+            else:
+                x_value = 0
+                y_value += 100
+        else:
+            cv2.putText(frame, "Calibration Compelete", (430, 200), cv2.FONT_HERSHEY_DUPLEX, 1.6, (147, 58, 31), 2)
+            saveData('test_input.csv', InputData)
+            saveData('test_output.csv', OutputData)
+            do_calibration = False
 
-    @staticmethod
-    def find_best_threshold(eye_frame):
-        """Calculates the optimal threshold to binarize the
-        frame for the given eye.
+    cv2.namedWindow("window", cv2.WND_PROP_FULLSCREEN)
+    cv2.setWindowProperty("window",cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
+    cv2.imshow("window", frame)    
 
-        Argument:
-            eye_frame (numpy.ndarray): Frame of the eye to be analyzed
-        """
-        average_iris_size = 0.48
-        trials = {}
+    if cv2.waitKey(1) == 27:
+        saveData('test_input.csv', InputData)
+        saveData('test_output.csv', OutputData)
+        break
 
-        for threshold in range(5, 100, 5):
-            iris_frame = Pupil.image_processing(eye_frame, threshold)
-            trials[threshold] = Calibration.iris_size(iris_frame)
-
-        best_threshold, iris_size = min(trials.items(), key=(lambda p: abs(p[1] - average_iris_size)))
-        return best_threshold
-
-    def evaluate(self, eye_frame, side):
-        """Improves calibration by taking into consideration the
-        given image.
-
-        Arguments:
-            eye_frame (numpy.ndarray): Frame of the eye
-            side: Indicates whether it's the left eye (0) or the right eye (1)
-        """
-        threshold = self.find_best_threshold(eye_frame)
-
-        if side == 0:
-            self.thresholds_left.append(threshold)
-        elif side == 1:
-            self.thresholds_right.append(threshold)
-
-    def calibrate_from_data(self, data_file):
-        print "success"
-        sum = []
-        i = 0
-        with open(data_file) as csv_file:
-            csv_reader = csv.reader(csv_file, delimiter=',')
-            line_count = 0
-            for row in csv_reader:
-                if line_count >=30 and line_count < 90:
-                    line_count += 1
-                    if row[0]:
-                        for k in range(28):
-                            sum[k] = sum[k] + int(row[k])
-                else:
-                    print {row[0]}
-                    print sum
+    # if cv2.waitKey(1) == 27:
+    #     saveData('test_input.csv', InputData)
+    #     saveData('test_output.csv', OutputData)
+    #     break
