@@ -1,21 +1,23 @@
-"""
-Demonstration of the GazeTracking library.
-Check the README.md for complete documentation.
-"""
-
 import cv2
+import time
+import threading
 from gaze_tracking import GazeTracking
 from gaze_tracking.mouse import Mouse
-from datetime import datetime
-import time
+
+from gaze_tracking.voice import voice
+
+
 
 gaze = GazeTracking()
-webcam = cv2.VideoCapture(0) # ORGINAL CODE
+webcam = cv2.VideoCapture(0)
 cursor = Mouse()
-#nwebcam = cv2.VideoCapture(-1) # ADAM CODE
 username = input('What is your name: ')
 print('Get ready. Look at your cursor {} and move it around!'.format(username))
-time.sleep(2)
+
+voice_Thread = threading.Thread(target=voice, args=(), daemon=True)
+voice_Thread.start()
+
+time.sleep(1)
 
 #--------------------------
 
@@ -57,6 +59,7 @@ while True:
     left_pupil = gaze.pupil_left_coords()
     right_pupil = gaze.pupil_right_coords()
     mouse_x, mouse_y = cursor.cursor_position()
+
 #    cv2.putText(frame, "Left pupil:  " + str(left_pupil), (90, 130), cv2.FONT_HERSHEY_DUPLEX, 0.9, (147, 58, 31), 1)
 #    cv2.putText(frame, "Right pupil: " + str(right_pupil), (90, 165), cv2.FONT_HERSHEY_DUPLEX, 0.9, (147, 58, 31), 1)
 #    cv2.putText(frame, "cursor x position: " + str(mouse_x), (90, 200), cv2.FONT_HERSHEY_DUPLEX, 0.9, (147, 58, 31), 1)
