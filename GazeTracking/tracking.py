@@ -12,9 +12,14 @@ mouse = Controller()
 from tensorflow.keras import layers
 import numpy as np
 from time import sleep
+import threading
+from gaze_tracking.voice import voice
 
 
 from tensorflow.keras.models import load_model
+
+voice_Thread = threading.Thread(target=voice, args=(), daemon=True)
+voice_Thread.start()
 
 gaze = GazeTracking()
 webcam = cv2.VideoCapture(0) # ORGINAL CODE
@@ -24,8 +29,9 @@ cursor = Mouse()
 username = input('What is your name: ')
 print('Get ready. Look at your cursor {} and move it around!'.format(username))
 time.sleep(2)
-model_x = load_model('modelx2.h5')
-model_y = load_model('modely2.h5')
+model_x = load_model('predict_xindex.h5')
+model_y = load_model('predict_yindex.h5')
+model = load_model('model3.h5')
 #webcam = cv2.VideoCapture(0)
 #width = 1920
 #height = 1080
@@ -58,41 +64,65 @@ while True:
     
     ll = gaze.get_landmark_points_left()
     rl = gaze.get_landmark_points_right()
-    if left_pupil:
-        xnew = [[[left_pupil[0],right_pupil[0], #1535.2 863.2 960
-              ll[0].x,ll[1].x,ll[2].x,
-              ll[3].x,ll[4].x,ll[5].x,
-              rl[0].x,rl[1].x,rl[2].x,
-              rl[3].x,rl[4].x,rl[5].x]]]
+
+#    if left_pupil:
+#        xnew = [[[left_pupil[0],right_pupil[0], #1535.2 863.2 960
+#              ll[0].x,ll[1].x,ll[2].x,
+#              ll[3].x,ll[4].x,ll[5].x,
+#              rl[0].x,rl[1].x,rl[2].x,
+#              rl[3].x,rl[4].x,rl[5].x]]]
     
+#    if left_pupil:
+#        ynew = [[[left_pupil[1],right_pupil[1],
+#              ll[0].y,ll[1].y,ll[2].y,
+#              ll[3].y,ll[4].y,ll[5].y,
+#              rl[0].y,rl[1].y,rl[2].y,
+#              rl[3].y,rl[4].y,rl[5].y]]]
     if left_pupil:
-        ynew = [[[left_pupil[1],right_pupil[1],
-              ll[0].y,ll[1].y,ll[2].y,
-              ll[3].y,ll[4].y,ll[5].y,
-              rl[0].y,rl[1].y,rl[2].y,
-              rl[3].y,rl[4].y,rl[5].y]]]
-        
+        xnew = [[[left_pupil[0],right_pupil[0],left_pupil[1],right_pupil[1],#1535.2 863.2 960
+              ll[0].x,ll[0].y,ll[1].x,ll[1].y,ll[2].x,ll[2].y,
+              ll[3].x,ll[3].y,ll[4].x,ll[4].y,ll[5].x,ll[5].y,
+              rl[0].x,rl[0].y,rl[1].x,rl[1].y,rl[2].x,rl[2].y,
+              rl[3].x,rl[3].y,rl[4].x,rl[4].y,rl[5].x,rl[5].y]]]
+              
     map(float, xnew)    
-    map(float, ynew)
+#    map(float, ynew)
+    
+#    if left_pupil:
+#        xnew = [[[[left_pupil[0],left_pupil[1]], [right_pupil[0],right_pupil[1]],
+#              [ll[0].x,ll[0].y],[ll[1].x,ll[1].y],[ll[2].x,ll[2].y],
+#              [ll[3].x,ll[3].y],[ll[4].x,ll[4].y],[ll[5].x,ll[5].y],
+#              [rl[0].x,rl[0].y],[rl[1].x,rl[1].y],[rl[2].x,rl[2].y],
+#              [rl[3].x,rl[3].y],[rl[4].x,rl[4].y],[rl[5].x,rl[5].y]]]]
+        
+        
+#    ynew = model.predict(xnew)
+    
+    
+    #print(str(ynew[0][0]))
+    #print(str(ynew[0][1]))
               
     xpred = model_x.predict(xnew)
-    ypred = model_y.predict(ynew)
+    ypred = model_y.predict(xnew)
     
+    print (xpred)
+
+
     xpred = ((xpred*1920.0)/1535.2)
     ypred = ((ypred*1080.0)/863.2)
+#    xpred = ((ynew[0][0]*1920.0)/1535.2)
+#    ypred = ((ynew[0][0]*1080.0)/863.2) 
     
-    
-  #  xpred = (((xpred-700.0)*1920.0)/420.0)
-  #  ypred = ((ypred-600.0)*1080.0)/150.0
-
-    xpred = ((xpred-850.0)*1920.0)/200.0
-    
+    xpred = ((xpred-850.0)*1920.0)/200.0    
     ypred = ((ypred-520.0)*1080.0)/100.0
     
  #   print(abs(xpred[0][0]-float(mouse.position[0]))>300.0 or abs(ypred[0][0]-float(mouse.position[1]))>300.0)
     
     if(abs(xpred[0][0]-float(mouse.position[0]))>300.0 or abs(ypred[0][0]-float(mouse.position[1]))>150.0):
         mouse.position=(1920-xpred[0][0],ypred[0][0])
+ 
+#   if(abs(xpred-float(mouse.position[0]))>300.0 or abs(ypred-float(mouse.position[1]))>150.0):
+#        mouse.position=(1920-xpred,ypred)
 
     #print(mouse.position)
     
