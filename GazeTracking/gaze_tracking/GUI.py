@@ -17,12 +17,19 @@ class App:
         self.initiate = Button(frame2, text="Initiate Eye-Clicker", fg="blue", bg="red", width=20, height=10,
                                command=self.initialization)
         self.initiate.pack(padx=200, pady=20, side=LEFT)
-        self.calibration = Button(frame2, text="Start calibration", fg="blue", bg="red", width=20, height=10)
+        self.calibration = Button(frame2, text="Start calibration", fg="blue", bg="red", width=20, height=10,
+                                  command=self.calibration)
         self.calibration.pack(padx=200, pady=20, side=RIGHT)
 
     def initialization(self):
-        os.system("python ../example.py")
+        os.system("python ../tracking.py")
 
+    def calibration(self):
+        if(os.system("python ../calibration.py")):
+            raise RuntimeError('Calibration failed')
+        else:
+            if os.system("python ../model_training.py")==0:
+                print("Calibration finished")
 
 root = Tk()
 root.title("Eye-Clicker")

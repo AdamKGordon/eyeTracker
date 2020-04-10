@@ -323,10 +323,10 @@ class GazeTracking(object):
                                                   a*k*gaze_vert_y + (1-a*k)*self.algorithm_4_points[k][1]]
                     tmp_pt_x = int(self.algorithm_4_points[k][0])
                     tmp_pt_y = int(self.algorithm_4_points[k][1])
-                    if k < algo_4_num_pts*1:
-                        cv2.circle(frame, (tmp_pt_x, tmp_pt_y), 1, (csk,csk,csk))
-                        cv2.circle(frame, (tmp_pt_x, tmp_pt_y), 4, (csk,csk,csk))
-                        cv2.circle(frame, (tmp_pt_x, tmp_pt_y), 7, (csk,csk,csk))  
+                    # if k < algo_4_num_pts*1:
+                        # cv2.circle(frame, (tmp_pt_x, tmp_pt_y), 1, (csk,csk,csk))
+                        # cv2.circle(frame, (tmp_pt_x, tmp_pt_y), 4, (csk,csk,csk))
+                        # cv2.circle(frame, (tmp_pt_x, tmp_pt_y), 7, (csk,csk,csk))
               
 
     def annotated_frame(self):

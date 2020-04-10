@@ -24,8 +24,8 @@ cursor = Mouse()
 username = input('What is your name: ')
 print('Get ready. Look at your cursor {} and move it around!'.format(username))
 time.sleep(2)
-model_x = load_model('modelx2.h5')
-model_y = load_model('modely2.h5')
+model_x = load_model('/Users/leo/Desktop/Leo/School/McMaster/Capstone 4TB6A/GazeTracking_modified/eyeTracker/GazeTracking/modelx3.h5')
+model_y = load_model('/Users/leo/Desktop/Leo/School/McMaster/Capstone 4TB6A/GazeTracking_modified/eyeTracker/GazeTracking/modely3.h5')
 #webcam = cv2.VideoCapture(0)
 #width = 1920
 #height = 1080
