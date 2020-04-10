@@ -79,9 +79,9 @@ while True:
 #              rl[0].y,rl[1].y,rl[2].y,
 #              rl[3].y,rl[4].y,rl[5].y]]]
     if left_pupil:
-        xnew = [[[left_pupil[0],right_pupil[0],left_pupil[1],right_pupil[1],#1535.2 863.2 960
+        xnew = [[[left_pupil[0],left_pupil[1],#1535.2 863.2 960
               ll[0].x,ll[0].y,ll[1].x,ll[1].y,ll[2].x,ll[2].y,
-              ll[3].x,ll[3].y,ll[4].x,ll[4].y,ll[5].x,ll[5].y,
+              ll[3].x,ll[3].y,ll[4].x,ll[4].y,ll[5].x,ll[5].y,right_pupil[0],right_pupil[1],
               rl[0].x,rl[0].y,rl[1].x,rl[1].y,rl[2].x,rl[2].y,
               rl[3].x,rl[3].y,rl[4].x,rl[4].y,rl[5].x,rl[5].y]]]
               
@@ -113,8 +113,8 @@ while True:
 #    xpred = ((ynew[0][0]*1920.0)/1535.2)
 #    ypred = ((ynew[0][0]*1080.0)/863.2) 
     
-    xpred = ((xpred-850.0)*1920.0)/200.0    
-    ypred = ((ypred-520.0)*1080.0)/100.0
+#    xpred = ((xpred-850.0)*1920.0)/200.0    
+#    ypred = ((ypred-520.0)*1080.0)/100.0
     
  #   print(abs(xpred[0][0]-float(mouse.position[0]))>300.0 or abs(ypred[0][0]-float(mouse.position[1]))>300.0)
     
