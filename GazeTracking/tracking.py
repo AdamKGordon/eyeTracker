@@ -3,29 +3,43 @@ Demonstration of the GazeTracking library.
 Check the README.md for complete documentation.
 """
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import cv2
+
+import pandas as pd
 from gaze_tracking import GazeTracking
 from gaze_tracking.mouse import Mouse
 from pynput.mouse import Button,Controller
 import time
 mouse = Controller()
 from tensorflow.keras import layers
+from tensorflow import keras
 import numpy as np
 from time import sleep
 
 
 from tensorflow.keras.models import load_model
 
+train_dataset = pd.read_csv("test_input.csv")
+
+train_dataset.columns = ["lx", "ly", "rx", "ry", "ll1x", "ll1y", "ll2x", "ll2y", "ll3x", "ll3y", "ll4x", "ll4y", "ll5x", "ll5y"
+    , "ll6x", "ll6y", "rl1x", "rl1y", "rl2x", "rl2y", "rl3x", "rl3y", "rl4x", "rl4y", "rl5x", "rl5y", "rl6x", "rl6y"]
+
+# Get the stats of input data
+train_stats = train_dataset.describe()
+train_stats = train_stats.transpose()
+
 gaze = GazeTracking()
 webcam = cv2.VideoCapture(0) # ORGINAL CODE
 webcam.set(cv2.CAP_PROP_FPS, 10)
 cursor = Mouse()
 #webcam = cv2.VideoCapture(-1) # ADAM CODE
-username = input('What is your name: ')
-print('Get ready. Look at your cursor {} and move it around!'.format(username))
+#username = input('What is your name: ')
+#print('Get ready. Look at your cursor {} and move it around!'.format(username))
 time.sleep(2)
-model_x = load_model('/Users/leo/Desktop/Leo/School/McMaster/Capstone 4TB6A/GazeTracking_modified/eyeTracker/GazeTracking/modelx3.h5')
-model_y = load_model('/Users/leo/Desktop/Leo/School/McMaster/Capstone 4TB6A/GazeTracking_modified/eyeTracker/GazeTracking/modely3.h5')
+model_x = load_model('predict_xindex.h5')
+model_y = load_model('predict_yindex.h5')
 #webcam = cv2.VideoCapture(0)
 #width = 1920
 #height = 1080
@@ -58,25 +72,39 @@ while True:
     
     ll = gaze.get_landmark_points_left()
     rl = gaze.get_landmark_points_right()
+    new = []
+    #print(left_pupil == True)
     if left_pupil:
-        xnew = [[[left_pupil[0],right_pupil[0], #1535.2 863.2 960
-              ll[0].x,ll[1].x,ll[2].x,
-              ll[3].x,ll[4].x,ll[5].x,
-              rl[0].x,rl[1].x,rl[2].x,
-              rl[3].x,rl[4].x,rl[5].x]]]
-    
-    if left_pupil:
-        ynew = [[[left_pupil[1],right_pupil[1],
-              ll[0].y,ll[1].y,ll[2].y,
-              ll[3].y,ll[4].y,ll[5].y,
-              rl[0].y,rl[1].y,rl[2].y,
-              rl[3].y,rl[4].y,rl[5].y]]]
-        
-    map(float, xnew)    
-    map(float, ynew)
+        new = [left_pupil[0],left_pupil[1],right_pupil[0],right_pupil[1],ll[0].x,ll[0].y,
+                  ll[1].x,ll[1].y,ll[2].x,ll[2].y,ll[3].x,ll[3].y,ll[4].x,ll[4].y,ll[5].x,ll[5].y,
+                  rl[0].x,rl[0].y,rl[1].x,rl[1].y,rl[2].x,rl[2].y,rl[3].x,rl[3].y,rl[4].x,rl[4].y,
+                  rl[5].x,rl[5].y]
+    #     xnew = [[[left_pupil[0],right_pupil[0], #1535.2 863.2 960    #Jeffery's Code
+    #           ll[0].x,ll[1].x,ll[2].x,
+    #           ll[3].x,ll[4].x,ll[5].x,
+    #           rl[0].x,rl[1].x,rl[2].x,
+    #           rl[3].x,rl[4].x,rl[5].x]]]
+    #
+    # if left_pupil:
+    #     ynew = [[[left_pupil[1],right_pupil[1],
+    #           ll[0].y,ll[1].y,ll[2].y,
+    #           ll[3].y,ll[4].y,ll[5].y,
+    #           rl[0].y,rl[1].y,rl[2].y,
+    #           rl[3].y,rl[4].y,rl[5].y]]]
+    print(new)
+    current_data = pd.DataFrame(new).transpose()
+    current_data.columns = train_dataset.columns
+
+    print(current_data)
+
+    def norm(x):
+        return (x - train_stats['mean']) / train_stats['std']
+    normed_current_data = norm(current_data)
+    # map(float, xnew)
+    # map(float, ynew)
               
-    xpred = model_x.predict(xnew)
-    ypred = model_y.predict(ynew)
+    xpred = model_x.predict(normed_current_data)
+    ypred = model_y.predict(normed_current_data)
     
     xpred = ((xpred*1920.0)/1535.2)
     ypred = ((ypred*1080.0)/863.2)
