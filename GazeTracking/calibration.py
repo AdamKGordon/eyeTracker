@@ -13,6 +13,10 @@ from datetime import datetime
 gaze = GazeTracking()
 webcam = cv2.VideoCapture(0) # ORGINAL CODE
 
+w = webcam.get(cv2.CAP_PROP_FRAME_WIDTH)
+h = webcam.get(cv2.CAP_PROP_FRAME_HEIGHT)
+print (w,h)
+
 cursor = Mouse()
 username = input('What is your name: ')
 print('Get ready. Look at your cursor {} and move it around!'.format(username))
@@ -63,7 +67,15 @@ while True:
                     newOutput = []
                     newOutput.append(x_value)
                     newOutput.append(y_value)
+                    x_left, y_left = gaze.pupil_left_coords()
+                    newInput.append(x_left)
+                    newInput.append(y_left)
+                    x_right, y_right = gaze.pupil_right_coords()
+                    newInput.append(x_right)
+                    newInput.append(y_right)
                     landmark_points_left = gaze.get_landmark_points_left()
+                    print ("left pupil: ", str(x_left), " ", str(y_left))
+                    print ("right pupil: ", str(x_right), " ", str(y_right))
                     for point in landmark_points_left:
                         newInput.append(point.x)
                         newInput.append(point.y)
@@ -73,14 +85,6 @@ while True:
                         newInput.append(point.x)
                         newInput.append(point.y)
                         print ("right landmark: ", str(point.x), " ", str(point.y))
-                    x_left, y_left = gaze.pupil_left_coords()
-                    newInput.append(x_left)
-                    newInput.append(y_left)
-                    x_right, y_right = gaze.pupil_right_coords()
-                    newInput.append(x_right)
-                    newInput.append(y_right)
-                    print ("left pupil: ", str(x_left), " ", str(y_left))
-                    print ("right pupil: ", str(x_right), " ", str(y_right))
                     print ("-----------------------------------")
                     InputData.append(newInput)
                     OutputData.append(newOutput)
@@ -94,6 +98,7 @@ while True:
             saveData('test_input.csv', InputData)
             saveData('test_output.csv', OutputData)
             do_calibration = False
+            break
 
     cv2.namedWindow("window", cv2.WND_PROP_FULLSCREEN)
     cv2.setWindowProperty("window",cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)

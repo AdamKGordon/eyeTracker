@@ -13,7 +13,7 @@ from tensorflow.keras import layers
 import numpy as np
 from time import sleep
 #import threading
-f#rom gaze_tracking.voice import voice
+#from gaze_tracking.voice import voice
 import pandas as pd
 
 
@@ -22,7 +22,7 @@ from tensorflow.keras.models import load_model
 #voice_Thread = threading.Thread(target=voice, args=(), daemon=True)
 #voice_Thread.start()
 
-#gaze = GazeTracking()
+gaze = GazeTracking()
 webcam = cv2.VideoCapture(0) # ORGINAL CODE
 webcam.set(cv2.CAP_PROP_FPS, 10)
 cursor = Mouse()
@@ -32,7 +32,7 @@ print('Get ready. Look at your cursor {} and move it around!'.format(username))
 time.sleep(2)
 model_x = load_model('predict_xindex.h5')
 model_y = load_model('predict_yindex.h5')
-model = load_model('model3.h5')
+#model = load_model('model3.h5')
 #webcam = cv2.VideoCapture(0)
 #width = 1920
 #height = 1080
@@ -81,9 +81,9 @@ while True:
 #              rl[0].y,rl[1].y,rl[2].y,
 #              rl[3].y,rl[4].y,rl[5].y]]]
     if left_pupil:
-        xnew = [left_pupil[0],left_pupil[1],#1535.2 863.2 960
+        xnew = [left_pupil[0],left_pupil[1],right_pupil[0],right_pupil[1],#1535.2 863.2 960
               ll[0].x,ll[0].y,ll[1].x,ll[1].y,ll[2].x,ll[2].y,
-              ll[3].x,ll[3].y,ll[4].x,ll[4].y,ll[5].x,ll[5].y,right_pupil[0],right_pupil[1],
+              ll[3].x,ll[3].y,ll[4].x,ll[4].y,ll[5].x,ll[5].y,
               rl[0].x,rl[0].y,rl[1].x,rl[1].y,rl[2].x,rl[2].y,
               rl[3].x,rl[3].y,rl[4].x,rl[4].y,rl[5].x,rl[5].y]
         
@@ -101,32 +101,13 @@ while True:
         return (x - train_stats['mean']) / train_stats['std']
     
     normed_current_data = norm(current_data)
-              
-#    map(float, normed_current_data)    
-#    map(float, ynew)
     
-#    if left_pupil:
-#        xnew = [[[[left_pupil[0],left_pupil[1]], [right_pupil[0],right_pupil[1]],
-#              [ll[0].x,ll[0].y],[ll[1].x,ll[1].y],[ll[2].x,ll[2].y],
-#              [ll[3].x,ll[3].y],[ll[4].x,ll[4].y],[ll[5].x,ll[5].y],
-#              [rl[0].x,rl[0].y],[rl[1].x,rl[1].y],[rl[2].x,rl[2].y],
-#              [rl[3].x,rl[3].y],[rl[4].x,rl[4].y],[rl[5].x,rl[5].y]]]]
-        
-        
-#    ynew = model.predict(xnew)
-    
-    
-    #print(str(ynew[0][0]))
-    #print(str(ynew[0][1]))
-    
-        
-    
-              
     xpred = model_x.predict(normed_current_data)
     ypred = model_y.predict(normed_current_data)
     
-    print (xpred)
-
+    print ("x:",xpred,",y:",ypred)
+    green = (0,0,255)
+    cv2.circle(frame, (int(xpred), int(ypred)), 2, green)
 
     xpred = ((xpred*1920.0)/1535.2)
     ypred = ((ypred*1080.0)/863.2)
@@ -138,8 +119,8 @@ while True:
     
  #   print(abs(xpred[0][0]-float(mouse.position[0]))>300.0 or abs(ypred[0][0]-float(mouse.position[1]))>300.0)
     
-    if(abs(xpred[0][0]-float(mouse.position[0]))>300.0 or abs(ypred[0][0]-float(mouse.position[1]))>150.0):
-        mouse.position=(1920-xpred[0][0],ypred[0][0])
+    # if(abs(xpred[0][0]-float(mouse.position[0]))>300.0 or abs(ypred[0][0]-float(mouse.position[1]))>150.0):
+    #     mouse.position=(1920-xpred[0][0],ypred[0][0])
  
 #   if(abs(xpred-float(mouse.position[0]))>300.0 or abs(ypred-float(mouse.position[1]))>150.0):
 #        mouse.position=(1920-xpred,ypred)
@@ -153,7 +134,7 @@ while True:
 #    cv2.putText(frame, "cursor y position: " + str(mouse_y), (90, 235), cv2.FONT_HERSHEY_DUPLEX, 0.9, (147, 58, 31), 1)
 
     gaze.annotated_frame_eye(frame) # displays landmark points
-    gaze.annotated_gaze_estimation_visual(frame) # displays spot looked at on screen
+    # gaze.annotated_gaze_estimation_visual(frame) # displays spot looked at on screen
  #   gaze.log_landmarks_pupils_and_cursor_pos(username)
     
     

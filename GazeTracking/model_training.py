@@ -66,7 +66,7 @@ def build_model():
 		layers.Dense(1)
 	])
 
-	optimizer = tf.keras.optimizers.RMSprop(0.00015)
+	optimizer = tf.keras.optimizers.RMSprop(0.0002)
 
 	model.compile(loss='mse',
     	optimizer=optimizer,
