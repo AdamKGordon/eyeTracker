@@ -66,20 +66,6 @@ while True:
     ll = gaze.get_landmark_points_left()
     rl = gaze.get_landmark_points_right()
     
-
-#    if left_pupil:
-#        xnew = [[[left_pupil[0],right_pupil[0], #1535.2 863.2 960
-#              ll[0].x,ll[1].x,ll[2].x,
-#              ll[3].x,ll[4].x,ll[5].x,
-#              rl[0].x,rl[1].x,rl[2].x,
-#              rl[3].x,rl[4].x,rl[5].x]]]
-    
-#    if left_pupil:
-#        ynew = [[[left_pupil[1],right_pupil[1],
-#              ll[0].y,ll[1].y,ll[2].y,
-#              ll[3].y,ll[4].y,ll[5].y,
-#              rl[0].y,rl[1].y,rl[2].y,
-#              rl[3].y,rl[4].y,rl[5].y]]]
     if left_pupil:
         xnew = [left_pupil[0],left_pupil[1],right_pupil[0],right_pupil[1],#1535.2 863.2 960
               ll[0].x,ll[0].y,ll[1].x,ll[1].y,ll[2].x,ll[2].y,
@@ -87,36 +73,43 @@ while True:
               rl[0].x,rl[0].y,rl[1].x,rl[1].y,rl[2].x,rl[2].y,
               rl[3].x,rl[3].y,rl[4].x,rl[4].y,rl[5].x,rl[5].y]
         
-    train_dataset = pd.read_csv("test_input.csv")
-    train_dataset.columns = ["lx", "ly", "rx", "ry", "ll1x", "ll1y", "ll2x", "ll2y", "ll3x", "ll3y", "ll4x", "ll4y", "ll5x", "ll5y"
-    , "ll6x", "ll6y", "rl1x", "rl1y", "rl2x", "rl2y", "rl3x", "rl3y", "rl4x", "rl4y", "rl5x", "rl5y", "rl6x", "rl6y"]
-    
-    # Get the stats of input data
-    train_stats = train_dataset.describe()
-    train_stats = train_stats.transpose()
+        train_dataset = pd.read_csv("test_input.csv")
+        train_dataset.columns = ["lx", "ly", "rx", "ry", "ll1x", "ll1y", "ll2x", "ll2y", "ll3x", "ll3y", "ll4x", "ll4y", "ll5x", "ll5y"
+        , "ll6x", "ll6y", "rl1x", "rl1y", "rl2x", "rl2y", "rl3x", "rl3y", "rl4x", "rl4y", "rl5x", "rl5y", "rl6x", "rl6y"]
         
-    current_data = pd.DataFrame(xnew).transpose()
-    current_data.columns = train_dataset.columns
-    def norm(x):
-        return (x - train_stats['mean']) / train_stats['std']
+        # Get the stats of input data
+        train_stats = train_dataset.describe()
+        train_stats = train_stats.transpose()
+            
+        current_data = pd.DataFrame(xnew).transpose()
+        current_data.columns = train_dataset.columns
+        def norm(x):
+            return (x - train_stats['mean']) / train_stats['std']
+        
+        normed_current_data = norm(current_data)
+        
+        xpred = model_x.predict(normed_current_data)
+        ypred = model_y.predict(normed_current_data)
+        
+        print ("x:",xpred,",y:",ypred)
+        green = (0,0,255)
+        cv2.circle(frame, (int(xpred), int(ypred)), 2, green)
+        
+        xindex = 2560*xpred/1280
+        yindex = 1600*ypred/720
+        if (xindex >= 2560):
+            xindex = 2560   
+        if (xindex <= 0):
+            xindex = 0
+        if (yindex >= 1600):
+            yindex = 1600
+        if (yindex <= 0):
+            yindex = 0
+        mouse.position = (xindex, yindex)
+        print ("xi:",xindex,",yi:",yindex)
     
-    normed_current_data = norm(current_data)
-    
-    xpred = model_x.predict(normed_current_data)
-    ypred = model_y.predict(normed_current_data)
-    
-    print ("x:",xpred,",y:",ypred)
-    green = (0,0,255)
-    cv2.circle(frame, (int(xpred), int(ypred)), 2, green)
 
-    xpred = ((xpred*1920.0)/1535.2)
-    ypred = ((ypred*1080.0)/863.2)
-#    xpred = ((ynew[0][0]*1920.0)/1535.2)
-#    ypred = ((ynew[0][0]*1080.0)/863.2) 
-    
-#    xpred = ((xpred-850.0)*1920.0)/200.0    
-#    ypred = ((ypred-520.0)*1080.0)/100.0
-    
+    # 2560 x 1600
  #   print(abs(xpred[0][0]-float(mouse.position[0]))>300.0 or abs(ypred[0][0]-float(mouse.position[1]))>300.0)
     
     # if(abs(xpred[0][0]-float(mouse.position[0]))>300.0 or abs(ypred[0][0]-float(mouse.position[1]))>150.0):
@@ -124,9 +117,6 @@ while True:
  
 #   if(abs(xpred-float(mouse.position[0]))>300.0 or abs(ypred-float(mouse.position[1]))>150.0):
 #        mouse.position=(1920-xpred,ypred)
-
-    #print(mouse.position)
-    
 #    mouse_x, mouse_y = cursor.cursor_position()
 #    cv2.putText(frame, "Left pupil:  " + str(left_pupil), (90, 130), cv2.FONT_HERSHEY_DUPLEX, 0.9, (147, 58, 31), 1)
 #    cv2.putText(frame, "Right pupil: " + str(right_pupil), (90, 165), cv2.FONT_HERSHEY_DUPLEX, 0.9, (147, 58, 31), 1)
