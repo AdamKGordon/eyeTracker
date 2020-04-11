@@ -12,16 +12,17 @@ mouse = Controller()
 from tensorflow.keras import layers
 import numpy as np
 from time import sleep
-import threading
-from gaze_tracking.voice import voice
+#import threading
+f#rom gaze_tracking.voice import voice
+import pandas as pd
 
 
 from tensorflow.keras.models import load_model
 
-voice_Thread = threading.Thread(target=voice, args=(), daemon=True)
-voice_Thread.start()
+#voice_Thread = threading.Thread(target=voice, args=(), daemon=True)
+#voice_Thread.start()
 
-gaze = GazeTracking()
+#gaze = GazeTracking()
 webcam = cv2.VideoCapture(0) # ORGINAL CODE
 webcam.set(cv2.CAP_PROP_FPS, 10)
 cursor = Mouse()
@@ -64,6 +65,7 @@ while True:
     
     ll = gaze.get_landmark_points_left()
     rl = gaze.get_landmark_points_right()
+    
 
 #    if left_pupil:
 #        xnew = [[[left_pupil[0],right_pupil[0], #1535.2 863.2 960
@@ -79,13 +81,28 @@ while True:
 #              rl[0].y,rl[1].y,rl[2].y,
 #              rl[3].y,rl[4].y,rl[5].y]]]
     if left_pupil:
-        xnew = [[[left_pupil[0],left_pupil[1],#1535.2 863.2 960
+        xnew = [left_pupil[0],left_pupil[1],#1535.2 863.2 960
               ll[0].x,ll[0].y,ll[1].x,ll[1].y,ll[2].x,ll[2].y,
               ll[3].x,ll[3].y,ll[4].x,ll[4].y,ll[5].x,ll[5].y,right_pupil[0],right_pupil[1],
               rl[0].x,rl[0].y,rl[1].x,rl[1].y,rl[2].x,rl[2].y,
-              rl[3].x,rl[3].y,rl[4].x,rl[4].y,rl[5].x,rl[5].y]]]
+              rl[3].x,rl[3].y,rl[4].x,rl[4].y,rl[5].x,rl[5].y]
+        
+    train_dataset = pd.read_csv("test_input.csv")
+    train_dataset.columns = ["lx", "ly", "rx", "ry", "ll1x", "ll1y", "ll2x", "ll2y", "ll3x", "ll3y", "ll4x", "ll4y", "ll5x", "ll5y"
+    , "ll6x", "ll6y", "rl1x", "rl1y", "rl2x", "rl2y", "rl3x", "rl3y", "rl4x", "rl4y", "rl5x", "rl5y", "rl6x", "rl6y"]
+    
+    # Get the stats of input data
+    train_stats = train_dataset.describe()
+    train_stats = train_stats.transpose()
+        
+    current_data = pd.DataFrame(xnew).transpose()
+    current_data.columns = train_dataset.columns
+    def norm(x):
+        return (x - train_stats['mean']) / train_stats['std']
+    
+    normed_current_data = norm(current_data)
               
-    map(float, xnew)    
+#    map(float, normed_current_data)    
 #    map(float, ynew)
     
 #    if left_pupil:
@@ -101,9 +118,12 @@ while True:
     
     #print(str(ynew[0][0]))
     #print(str(ynew[0][1]))
+    
+        
+    
               
-    xpred = model_x.predict(xnew)
-    ypred = model_y.predict(xnew)
+    xpred = model_x.predict(normed_current_data)
+    ypred = model_y.predict(normed_current_data)
     
     print (xpred)
 
