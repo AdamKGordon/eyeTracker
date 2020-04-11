@@ -95,18 +95,18 @@ while True:
         green = (0,0,255)
         cv2.circle(frame, (int(xpred), int(ypred)), 2, green)
         
-        xindex = 2560*xpred/1280
-        yindex = 1600*ypred/720
-        if (xindex >= 2560):
-            xindex = 2560   
-        if (xindex <= 0):
-            xindex = 0
-        if (yindex >= 1600):
-            yindex = 1600
-        if (yindex <= 0):
-            yindex = 0
-        mouse.position = (xindex, yindex)
-        print ("xi:",xindex,",yi:",yindex)
+        # xindex = 2560*xpred/1280
+        # yindex = 1600*ypred/720
+        # if (xindex >= 2560):
+        #     xindex = 2560   
+        # if (xindex <= 0):
+        #     xindex = 0
+        # if (yindex >= 1600):
+        #     yindex = 1600
+        # if (yindex <= 0):
+        #     yindex = 0
+        mouse.position = (xpred, ypred)
+       # print ("xi:",xindex,",yi:",yindex)
     
 
     # 2560 x 1600
@@ -126,10 +126,6 @@ while True:
     gaze.annotated_frame_eye(frame) # displays landmark points
     # gaze.annotated_gaze_estimation_visual(frame) # displays spot looked at on screen
  #   gaze.log_landmarks_pupils_and_cursor_pos(username)
-    
-    
-    
-    
 
     cv2.namedWindow("window", cv2.WND_PROP_FULLSCREEN)
     cv2.setWindowProperty("window",cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
